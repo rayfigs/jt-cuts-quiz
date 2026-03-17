@@ -339,10 +339,18 @@
     });
   }
 
+  // ============ LEAD CAPTURE CONFIG ============
+  // Formsubmit.co — sends each lead to this email address (no backend needed)
+  // IMPORTANT: Replace with the actual email to receive leads
+  var LEAD_EMAIL = 'leads@jtcutsacademy.com';
+
+  // Optional: Google Sheets endpoint (leave empty to skip)
+  var GOOGLE_SCRIPT_URL = '';
+
   // ============ SUBMIT LEAD ============
   function submitLead() {
-    const name = document.getElementById('lead-name').value.trim();
-    const email = document.getElementById('lead-email').value.trim();
+    var name = document.getElementById('lead-name').value.trim();
+    var email = document.getElementById('lead-email').value.trim();
 
     if (!email) {
       document.getElementById('lead-email').style.borderColor = '#e74c3c';
@@ -350,7 +358,7 @@
     }
 
     // Collect all data
-    const data = {
+    var data = {
       name: name,
       email: email,
       hook: state.hook,
@@ -368,8 +376,39 @@
       timestamp: new Date().toISOString()
     };
 
-    // Send to Google Sheets via Apps Script (replace URL with actual endpoint)
-    const GOOGLE_SCRIPT_URL = '';
+    // === EMAIL VIA FORMSUBMIT.CO ===
+    // Sends lead data directly to your inbox — free, no signup needed
+    if (LEAD_EMAIL) {
+      var formData = new FormData();
+      formData.append('_subject', 'New Quiz Lead: ' + data.bucket_name + ' (' + data.bucket_code + ')');
+      formData.append('_template', 'table');
+      formData.append('_captcha', 'false');
+      formData.append('Name', data.name);
+      formData.append('Email', data.email);
+      formData.append('Quiz Result', data.bucket_name + ' (Code: ' + data.bucket_code + ')');
+      formData.append('Bucket #', data.bucket_number);
+      formData.append('Perspective', data.perspective);
+      formData.append('Hook Used', data.hook || 'direct');
+      formData.append('Traffic Source', data.source || 'direct');
+      formData.append('Q1 - For Whom', data.q1_for);
+      formData.append('Q2 - Primary Emotion', data.q2_emotion);
+      formData.append('Q3 - Demographic', data.q3_demographic);
+      formData.append('Q4 - Main Concern (Bucket)', data.q4_bucket);
+      formData.append('Q5 - Aspiration', data.q5_aspiration);
+      formData.append('Q6 - AI Concern', data.q6_ai_concern);
+      formData.append('Submitted At', data.timestamp);
+
+      fetch('https://formsubmit.co/ajax/' + LEAD_EMAIL, {
+        method: 'POST',
+        body: formData
+      }).then(function(res) {
+        console.log('Lead sent to email:', res.ok ? 'success' : 'failed');
+      }).catch(function(err) {
+        console.log('Email send error (lead still saved locally):', err);
+      });
+    }
+
+    // === GOOGLE SHEETS (optional) ===
     if (GOOGLE_SCRIPT_URL) {
       fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
@@ -379,9 +418,9 @@
       }).catch(function() {});
     }
 
-    // Also store locally
+    // === LOCAL BACKUP ===
     try {
-      const leads = JSON.parse(localStorage.getItem('quiz_leads') || '[]');
+      var leads = JSON.parse(localStorage.getItem('quiz_leads') || '[]');
       leads.push(data);
       localStorage.setItem('quiz_leads', JSON.stringify(leads));
     } catch(e) {}
