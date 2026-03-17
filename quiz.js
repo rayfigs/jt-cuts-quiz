@@ -342,7 +342,7 @@
   // ============ LEAD CAPTURE CONFIG ============
   // Formsubmit.co — sends each lead to this email address (no backend needed)
   // IMPORTANT: Replace with the actual email to receive leads
-  var LEAD_EMAIL = 'leads@jtcutsacademy.com';
+  var LEAD_EMAIL = 'figanna@gmail.com';
 
   // Optional: Google Sheets endpoint (leave empty to skip)
   var GOOGLE_SCRIPT_URL = '';
